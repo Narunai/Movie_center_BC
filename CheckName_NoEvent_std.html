@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+  <style>
+    /* CSS สำหรับตาราง */
+    #resultTable {
+      border-collapse: collapse;
+      width: 100%;
+      border: 1px solid black;
+      border-radius: 5px; /* กำหนดขนาดของการโค้ง */
+      overflow: hidden; /* คำสั่งนี้จำเป็นสำหรับทำให้การเกิดเส้นโค้งเป็นไปได้ */
+    }
+
+    #resultTable th,
+    #resultTable td {
+      border: 1px solid rgba(0, 0, 0, 0);
+      padding: 8px;
+      text-align: left;
+    }
+
+    #resultTable th {
+      background-color: lightgray; /* สีพื้นหลังสำหรับส่วนหัว */
+    }
+
+    /* สำหรับตารางข้อมูล */
+    #resultBody tr:nth-child(even) {
+      background-color: #cfcfcfa3; /* สีพื้นหลังสำหรับแถวคู่ */
+    }
+
+    /* สำหรับตารางข้อมูล */
+    #resultBody tr:nth-child(odd) {
+      background-color: #7a7a7aa2; /* สีพื้นหลังสำหรับแถวคี่ */
+    }
+  </style>
+  <head>
+    <title>Student Name in Blockchain Class</title>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+    <!-- <script src="./node_modules/web3/dist/web3.min.js">
+    </script> -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.3/dist/web3.min.js"></script>
+  </head>
+  <body>
+      <h1>Movie Center</h1>
+      <button id="btnCheck">Check the Owner</button>
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Name</th>
+            <th>Address</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+      <h2 id="result" style="border-radius: 5px; color: red">Status...</h2>
+      <style>
+        .card-movie2 {
+          display: flex;
+          justify-content: space-around; /* จัดให้รูปอยู่ตรงกลางและมีระยะห่างเท่ากัน */
+        }
+
+        .card-movie2 > div {
+          text-align: center;
+        }
+
+        .card-movie2 img {
+          height: 200px;
+          width: auto;
+        }
+        .card-movie2 button {
+          margin-top: 10px; /* Adjust the margin as needed */
+        }
+        .card-movie3 {
+          display: flex;
+          justify-content: space-around; /* จัดให้รูปอยู่ตรงกลางและมีระยะห่างเท่ากัน */
+        }
+
+        .card-movie3 > div {
+          text-align: center;
+        }
+
+        .card-movie3 img {
+          height: 200px;
+          width: auto;
+        }
+        .card-movie3 button {
+          margin-top: 10px; /* Adjust the margin as needed */
+        }
+      </style>
+
+      <div class="card-movie3">
+        <div>
+          <label class="col-lg-2 control-label"> Pokemon </label>
+          <img src="image\5.jpg" />
+          <label>Price: 0.0005 Ether</label>
+          <button class="card-movie2" id="btnRegistration05">Buy</button>
+        </div>
+        <div>
+          <label class="col-lg-2 control-label">
+            Conan the movie</label
+          >
+          <img
+            src="image\7.jpg"
+          />
+          <label>Price: 0.0002 Ether</label>
+          <button class="card-movie2" id="btnRegistration02">Buy</button>
+        </div>
+        <div>
+          <label class="col-lg-2 control-label">
+            Harry Potter</label
+          >
+          <img
+          src="image\6.jpg"
+          />
+          <label>Price: 0.0001 Ether</label>
+          <button class="card-movie2" id="btnRegistration01">Buy</button>
+        </div>
+      <!-- Repeat the structure for the second set of cards -->
+        <div>
+          <label class="col-lg-2 control-label"> Saint Seiya </label>
+          <img src="image\2.jpg" />
+          <label>Price: 0.0007 Ether</label>
+          <button class="card-movie2" id="btnRegistration07">Buy</button>
+        </div>
+        <div>
+          <label class="col-lg-2 control-label"> Kimesuno Yaiba </label>
+          <img src="image\3.jpg" />
+          <label>Price: 0.0006 Ether</label>
+          <button class="card-movie2" id="btnRegistration06">Buy</button>
+        </div>
+        <div>
+          <label class="col-lg-2 control-label"> The Eras Tour </label>
+          <img src="image\4.jpg" />
+          <label>Price: 0.0008 Ether</label>
+          <button class="card-movie2" id="btnRegistration08">Buy</button>
+        </div>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script>
+      // ===Connecting to MetaMask===
+      function loadWeb3() {
+        if (window.ethereum) {
+          // To get web3(.js) object
+          window.web3 = new Web3(window.ethereum);
+          // ***std***
+
+          // To request user's account from Metamask
+          // ***std***
+          ethereum
+            .request({ method: "eth_accounts" })
+            .then(handleAccountsChanged)
+            .catch((err) => {
+              if (err.code === 4001) {
+                // If this happens, the user rejected the connection request.
+                console.log("Please connect to MetaMask.");
+              } else {
+                console.error(err);
+              }
+            });
+        }
+      }
+
+      // ===Handle user accounts and accountsChanged===
+      let currentAccount = null;
+
+      // Note that this event is emitted on page load.
+      // If the array of accounts is non-empty, you're already connected.
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+      // For now, 'eth_accounts' will continue to always return an array
+      function handleAccountsChanged(accounts) {
+        if (accounts.length === 0) {
+          // MetaMask is locked or the user has not connected any accounts
+          console.log("Please connect to MetaMask.");
+        } else if (accounts[0] !== currentAccount) {
+          currentAccount = accounts[0];
+          // Update the display of current account
+          document.getElementById("currentAccount").innerHTML =
+            "Current Account: " + currentAccount;
+        }
+      }
+
+      //***std***
+      let abi = [
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "registrant",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+          ],
+          name: "NameAdded",
+          type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+          ],
+          name: "registration",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "registrant",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "reason",
+              type: "string",
+            },
+          ],
+          name: "RegistrationError",
+          type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+          ],
+          name: "checkName",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "checkRegistrationDetails",
+          outputs: [
+            {
+              internalType: "address[]",
+              name: "",
+              type: "address[]",
+            },
+            {
+              internalType: "string[]",
+              name: "",
+              type: "string[]",
+            },
+            {
+              internalType: "uint256[]",
+              name: "",
+              type: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ];
+
+      //***std***
+      async function loadContract() {
+        return await new web3.eth.Contract(
+          abi,
+          "0x8F7AE1f9580DEb1Be44b0aCE292C1Ec1a7561c43"
+        );
+      }
+
+      async function load() {
+        await loadWeb3();
+        web3.contract = await loadContract();
+        updateStatus("Ready!");
+      }
+      // Function to convert timestamp to human-readable date
+      function convertTimestamp(timestamp) {
+        const date = new Date(timestamp * 1000); // Convert to milliseconds
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const seconds = String(date.getSeconds()).padStart(2, "0");
+
+        return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
+      }
+
+      // Example usage
+      const timestamp = 1707654576; // Your timestamp here
+      const formattedDate = convertTimestamp(timestamp);
+      console.log(formattedDate); // Output: "14:16:16 10/06/2024"
+
+      function updateStatus(status) {
+        const statusEl = document.getElementById("status");
+        statusEl.innerHTML = status;
+        console.log(status);
+      }
+      //ชื่อหนัง
+
+      $("#btnRegistration05").click(function () {
+        handleBuy("Pokemon", "0.0005");
+      });
+      $("#btnRegistration02").click(function () {
+        handleBuy("Conan the movie", "0.0002");
+      });
+      $("#btnRegistration01").click(function () {
+        handleBuy("Harry Potter", "0.0001");
+      });
+      $("#btnRegistration07").click(function () {
+        handleBuy("Saint Seiya", "0.0007");
+      });
+      $("#btnRegistration06").click(function () {
+        handleBuy("Kimesuno Yaiba", "0.0006");
+      });
+      $("#btnRegistration08").click(function () {
+        handleBuy("The Eras Tour", "0.0008");
+      });
+
+      async function handleBuy(movie, price) {
+        console.log(currentAccount);
+
+        const currentTime = new Date();
+        const formattedTime = currentTime.toLocaleTimeString();
+
+        web3.contract.methods
+          .checkRegistrationDetails()
+          .call(function (error, result) {
+            if (!error) {
+              const addresses = result[0];
+              const names = result[1];
+              const timestamps = result[2];
+
+              let htmlResult = "";
+
+              for (let i = 0; i < addresses.length; i++) {
+                htmlResult +=
+                  "<tr><td>" +
+                  convertTimestamp(timestamps[i]) +
+                  "</td><td>" +
+                  names[i] +
+                  "</td><td>" +
+                  addresses[i] +
+                  "</td></tr>";
+              }
+
+              $("#resultBody").html(htmlResult);
+            } else {
+              console.error(error);
+            }
+          });
+
+        web3.contract.methods.registration(movie).send(
+          {
+            from: currentAccount,
+            value: web3.utils.toWei(price, "ether"),
+          },
+          function (error, result) {
+            $("#result").html(result);
+          }
+        );
+
+        web3.contract.once("NameAdded", {}, function (error, event) {
+          if (!error) {
+            console.log(event);
+            $("#titleMovie").html(movie);
+            $("#buyTime").html(formattedTime);
+            $("#result").html(event.returnValues.hash);
+          }
+        });
+
+        web3.contract.once("RegistrationError", {}, function (error, event) {
+          if (!error) {
+            console.log(event);
+
+            $("#result").html(
+              "Error: " +
+                event.returnValues.name +
+                "<br/>Reason: This movie has already been bought."
+            );
+          }
+        });
+      }
+
+      $("#btnCheck").click(function () {
+        web3.contract.methods
+          .checkRegistrationDetails()
+          .call(function (error, result) {
+            if (!error) {
+              const addresses = result[0];
+              const names = result[1];
+              const timestamps = result[2];
+
+              let htmlResult = "";
+
+              for (let i = 0; i < addresses.length; i++) {
+                htmlResult +=
+                  "<tr><td>" +
+                  convertTimestamp(timestamps[i]) +
+                  "</td><td>" +
+                  names[i] +
+                  "</td><td>" +
+                  addresses[i] +
+                  "</td></tr>";
+              }
+
+              $("#resultBody").html(htmlResult);
+            } else {
+              console.error(error);
+            }
+          });
+      });
+
+      load();
+    </script>
+  </body>
+</html>
